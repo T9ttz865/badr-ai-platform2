@@ -1,0 +1,1026 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<style>
+/* --- Global Styles & Variables --- */
+:root {
+  --bg-primary: #0f0f14;
+  --bg-secondary: #1a1a23;
+  --bg-tertiary: #252531;
+  --bg-glass: rgba(37, 37, 49, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #f7f7fc;
+  --text-secondary: #a0a0b8;
+  --text-tertiary: #696974;
+  --accent-primary: #6366f1;
+  --accent-primary-dark: #4f46e5;
+  --accent-secondary: #a855f7;
+  --accent-tertiary: #ec4899;
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --gradient-secondary: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --gradient-success: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Layout --- */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+main {
+  padding-top: 2rem;
+}
+
+/* --- Progress Bar --- */
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  position: relative;
+  padding: 0 1rem;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--bg-tertiary);
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.progress-step .step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.progress-step.completed .step-number {
+  background: var(--gradient-success);
+  border-color: transparent;
+  color: white;
+}
+
+.progress-step .step-label {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.progress-step.active .step-label,
+.progress-step.completed .step-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* --- Sections & Cards --- */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.glass-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+/* --- Upload Area --- */
+.upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.upload-area.drag-over {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.upload-area input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--accent-primary);
+}
+
+.upload-area h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.upload-area p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.upload-filename {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--accent-secondary);
+  font-weight: 500;
+}
+
+/* --- Input Field --- */
+.input-group {
+  margin-top: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* --- Success Message --- */
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-sm);
+  color: #22c55e;
+  font-weight: 600;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- AI Tools Grid --- */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.tool-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-primary);
+}
+
+.tool-card.selected {
+  border-color: var(--accent-primary);
+  background: rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.tool-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tool-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.tool-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  flex-grow: 1;
+}
+
+.help-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.help-icon:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.tooltip {
+  position: absolute;
+  top: 40px;
+  right: 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  width: 220px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.tooltip.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 15px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--bg-tertiary);
+}
+
+/* --- Action Button --- */
+.action-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--gradient-secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.3);
+}
+
+.action-button:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.action-button.loading {
+  color: transparent;
+}
+
+.action-button.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-left: -10px;
+  margin-top: -10px;
+  border: 2px solid transparent;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Results Panel --- */
+.results-content {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.results-content.active {
+  display: block;
+  align-items: initial;
+  justify-content: initial;
+}
+
+.result-item h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--accent-primary);
+}
+
+.result-item p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+
+/* --- AI Suggestions --- */
+.ai-suggestions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.ai-suggestions h4 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--accent-secondary);
+}
+
+.suggestion-item {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent-secondary);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.suggestion-item p {
+  margin-bottom: 0;
+}
+
+/* --- Job Match --- */
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.match-score .score-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.match-score .score-label {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 5px;
+  transition: width 1. ease-in-out;
+}
+
+/* --- Recent Analysis --- */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.recent-item .tool-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.recent-item .time-ago {
+  color: var(--text-tertiary);
+}
+
+/* --- Navigation --- */
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+}
+
+.nav-button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+/* --- Utility Classes --- */
+.hidden {
+  display: none !important;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .progress-bar {
+    padding: 0;
+  }
+  .progress-step .step-label {
+    font-size: 0.75rem;
+  }
+  .tools-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .glass-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tools-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .tools-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="container">
+  <!-- Progress Bar -->
+  <div class="progress-bar">
+    <div class="progress-step active" id="step1">
+      <span class="step-number">1</span>
+      <span class="step-label">Upload CV</span>
+    </div>
+    <div class="progress-step" id="step2">
+      <span class="step-number">2</span>
+      <span class="step-label">Enter Job Title</span>
+    </div>
+    <div class="progress-step" id="step3">
+      <span class="step-number">3</span>
+      <span class="step-label">Choose Tool</span>
+    </div>
+    <div class="progress-step" id="step4">
+      <span class="step-number">4</span>
+      <span class="step-label">Results</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Upload CV -->
+  <section class="glass-card" id="uploadSection">
+    <h2>Upload Your CV</h2>
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="cvFileInput" accept=".pdf,.docx">
+      <div class="upload-icon">📄</div>
+      <h3>Drag & Drop your CV here</h3>
+      <p>or click to browse</p>
+      <div class="upload-filename hidden" id="uploadedFilename"></div>
+    </div>
+  </section>
+
+  <!-- Step 2: Enter Job Title -->
+  <section class="glass-card hidden" id="jobTitleSection">
+    <h2>Enter Job Title / Specialization</h2>
+    <div class="input-group">
+      <label for="jobTitle">Job Title</label>
+      <input type="text" id="jobTitle" placeholder="e.g., Senior Software Engineer, Product Manager">
+    </div>
+  </section>
+
+  <!-- Step 3: Success Message & Tools Grid -->
+  <section class="glass-card hidden" id="toolsSection">
+    <div class="success-message hidden" id="successMessage">
+      <span>✅</span>
+      <span>CV Uploaded Successfully</span>
+    </div>
+    <h2>Choose an AI Tool</h2>
+    <div class="tools-grid">
+      <!-- CV Analysis -->
+      <div class="tool-card" data-tool="cv-analysis">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Get a detailed breakdown of your CV's structure, content, and impact.</div>
+        <div class="tool-icon">🔍</div>
+        <h3 class="tool-title">CV Analysis</h3>
+        <p class="tool-description">Deep dive into your resume's strengths and weaknesses.</p>
+      </div>
+
+      <!-- ATS Check -->
+      <div class="tool-card" data-tool="ats-check">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Ensure your CV is formatted to be read correctly by Applicant Tracking Systems.</div>
+        <div class="tool-icon">✅</div>
+        <h3 class="tool-title">ATS Check</h3>
+        <p class="tool-description">Optimize your CV to pass through automated filters.</p>
+      </div>
+
+      <!-- CV Score -->
+      <div class="tool-card" data-tool="cv-score">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Receive a comprehensive score based on industry best practices.</div>
+        <div class="tool-icon">📊</div>
+        <h3 class="tool-title">CV Score</h3>
+        <p class="tool-description">Get a numerical score to gauge your CV's effectiveness.</p>
+      </div>
+
+      <!-- Improve CV -->
+      <div class="tool-card" data-tool="improve-cv">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Receive actionable, AI-powered suggestions to enhance your CV.</div>
+        <div class="tool-icon">🚀</div>
+        <h3 class="tool-title">Improve CV</h3>
+        <p class="tool-description">Get concrete advice to make your CV stand out.</p>
+      </div>
+
+      <!-- Cover Letter -->
+      <div class="tool-card" data-tool="cover-letter">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Generate a compelling, personalized cover letter in seconds.</div>
+        <div class="tool-icon">✉️</div>
+        <h3 class="tool-title">Cover Letter</h3>
+        <p class="tool-description">Create a tailored cover letter for your application.</p>
+      </div>
+
+      <!-- Job Match -->
+      <div class="tool-card" data-tool="job-match">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">See how well your CV aligns with a specific job description.</div>
+        <div class="tool-icon">🎯</div>
+        <h3 class="tool-title">Job Match</h3>
+        <p class="tool-description">Find the percentage match between your CV and the job.</p>
+      </div>
+
+      <!-- HR Questions -->
+      <div class="tool-card" data-tool="hr-questions">
+        <span class="help-icon">ⓘ</span>
+        <div class="tooltip">Prepare for your interview with AI-generated questions.</div>
+        <div class="tool-icon">❓</div>
+        <h3 class="tool-title">HR Questions</h3>
+        <p class="tool-description">Get a list of likely questions based on your CV.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Start Analysis Button -->
+  <div class="hidden" id="analysisButtonContainer">
+    <button class="action-button" id="analysisButton" disabled>Start AI Analysis</button>
+  </div>
+
+  <!-- Step 4: Results Panel -->
+  <section class="glass-card" id="resultsSection">
+    <h2>Analysis Results</h2>
+    <div class="results-content" id="resultsContent">
+      No analysis yet. Please complete the steps above.
+    </div>
+  </section>
+
+  <!-- Recent Analysis -->
+  <section class="glass-card hidden" id="recentAnalysisSection">
+    <h2>Recent Analysis</h2>
+    <div class="recent-list">
+      <div class="recent-item">
+        <span class="tool-name">CV Analysis</span>
+        <span class="time-ago">2 mins ago</span>
+      </div>
+      <div class="recent-item">
+        <span class="tool-name">Job Match</span>
+        <span class="time-ago">1 hour ago</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <div style="text-align: center;">
+    <a href="{{ url_for('home') }}" class="nav-button">← Back to Home</a>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // --- DOM Elements ---
+  const elements = {
+    step1: document.getElementById('step1'),
+    step2: document.getElementById('step2'),
+    step3: document.getElementById('step3'),
+    step4: document.getElementById('step4'),
+    uploadSection: document.getElementById('uploadSection'),
+    jobTitleSection: document.getElementById('jobTitleSection'),
+    jobTitleInput: document.getElementById('jobTitle'),
+    toolsSection: document.getElementById('toolsSection'),
+    successMessage: document.getElementById('successMessage'),
+    analysisButtonContainer: document.getElementById('analysisButtonContainer'),
+    analysisButton: document.getElementById('analysisButton'),
+    resultsSection: document.getElementById('resultsSection'),
+    resultsContent: document.getElementById('resultsContent'),
+    recentAnalysisSection: document.getElementById('recentAnalysisSection'),
+    cvFileInput: document.getElementById('cvFileInput'),
+    uploadArea: document.getElementById('uploadArea'),
+    uploadedFilename: document.getElementById('uploadedFilename'),
+    toolCards: document.querySelectorAll('.tool-card'),
+    tooltips: document.querySelectorAll('.tooltip'),
+  };
+
+  elements.uploadArea.addEventListener("click", () => {
+    elements.cvFileInput.click()
+  })
+
+  let selectedTool = null;
+  let currentStep = 1;
+
+  // --- Helper Functions ---
+  const updateProgress = (step) => {
+    for (let i = 1; i <= 4; i++) {
+      const stepEl = elements[`step${i}`];
+      stepEl.classList.remove('active', 'completed');
+      if (i < step) {
+        stepEl.classList.add('completed');
+      } else if (i === step) {
+        stepEl.classList.add('active');
+      }
+    }
+    currentStep = step;
+  };
+
+  const showElement = (el) => el.classList.remove('hidden');
+  const hideElement = (el) => el.classList.add('hidden');
+
+  // --- Event Listeners ---
+
+  // Step 1: File Upload
+  elements.cvFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      elements.uploadedFilename.textContent = `Uploaded: ${file.name}`;
+      showElement(elements.uploadedFilename);
+      showElement(elements.jobTitleSection);
+      updateProgress(2);
+    }
+  });
+
+  // Drag & Drop
+  elements.uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    elements.uploadArea.classList.add('drag-over');
+  });
+  elements.uploadArea.addEventListener('dragleave', () => {
+    elements.uploadArea.classList.remove('drag-over');
+  });
+  elements.uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    elements.uploadArea.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      elements.cvFileInput.files = files;
+      const event = new Event('change', { bubbles: true });
+      elements.cvFileInput.dispatchEvent(event);
+    }
+  });
+
+  // Step 2: Job Title Input
+  elements.jobTitleInput.addEventListener('input', () => {
+    if (elements.jobTitleInput.value.trim().length > 0) {
+      showElement(elements.toolsSection);
+      showElement(elements.analysisButtonContainer);
+      showElement(elements.recentAnalysisSection);
+      showElement(elements.successMessage);
+      updateProgress(3);
+    }
+  });
+
+  // Step 3: Tool Selection
+  elements.toolCards.forEach(card => {
+    card.addEventListener('click', () => {
+      elements.toolCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedTool = card.dataset.tool;
+      elements.analysisButton.disabled = false;
+    });
+  });
+
+  // Tooltip Toggle
+  document.querySelectorAll('.help-icon').forEach(icon => {
+    icon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tooltip = icon.nextElementSibling;
+      tooltip.classList.toggle('active');
+    });
+  });
+  document.addEventListener('click', () => {
+    elements.tooltips.forEach(t => t.classList.remove('active'));
+  });
+// FIX: tool selection click not working
+document.addEventListener('click', function(e) {
+
+  const card = e.target.closest('.tool-card');
+  if (!card) return;
+
+  document.querySelectorAll('.tool-card').forEach(c => {
+    c.classList.remove('selected');
+  });
+
+  card.classList.add('selected');
+
+  elements.analysisButton.disabled = false;
+
+});
+  // Step 4: Start Analysis
+ elements.analysisButton.addEventListener('click', async () => {
+
+  console.log("analysis started")
+
+  const selectedCard = document.querySelector(".tool-card.selected")
+  if (!selectedCard) return
+
+  const selectedTool = selectedCard.dataset.tool
+
+  const file = elements.cvFileInput.files[0]
+  const jobTitle = elements.jobTitleInput.value
+
+  const formData = new FormData()
+
+  formData.append("cv", file)
+  formData.append("job_title", jobTitle)
+  formData.append("tool", selectedTool)
+
+  elements.analysisButton.classList.add('loading')
+  elements.analysisButton.disabled = true
+
+  updateProgress(4)
+
+  try {
+
+    const response = await fetch("/analyze_cv", {
+      method: "POST",
+      body: formData
+    })
+
+    const data = await response.json()
+
+    elements.resultsContent.classList.add('active')
+    elements.resultsContent.innerHTML = data.result
+
+  } catch (error) {
+
+    elements.resultsContent.innerHTML = `
+      <div class="result-item">
+      <h3>Error</h3>
+      <p>AI analysis failed.</p>
+      </div>
+    `
+
+  }
+
+  elements.analysisButton.classList.remove('loading')
+  elements.analysisButton.disabled = false
+
+  elements.resultsSection.scrollIntoView({ behavior: 'smooth' })
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // --- Result HTML Generator ---
+  const generateResultHTML = (tool) => {
+    const titles = {
+      'cv-analysis': 'CV Analysis',
+      'ats-check': 'ATS Compatibility Check',
+      'cv-score': 'CV Score',
+      'improve-cv': 'Improve CV',
+      'cover-letter': 'Cover Letter',
+      'job-match': 'Job Match',
+      'hr-questions': 'HR Questions',
+    };
+
+    let html = `<div class="result-item"><h3>${titles[tool]} Results</h3>`;
+
+    switch (tool) {
+      case 'cv-analysis':
+        html += `<p>Your CV is well-structured and highlights key achievements. To improve, focus on quantifying results with more specific metrics.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI Suggestions</h4>
+            <div class="suggestion-item"><p>Add metrics like "Increased sales by 20%" to your experience descriptions.</p></div>
+            <div class="suggestion-item"><p>Consider using stronger action verbs like "Orchestrated" or "Spearheaded".</p></div>
+          </div>`;
+        break;
+      case 'ats-check':
+        html += `<p>Your CV has a 90% compatibility rate with most ATS. Avoid using complex tables or headers/footers in your document.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI Suggestions</h4>
+            <div class="suggestion-item"><p>Remove any columns or text boxes from your CV layout.</p></div>
+            <div class="suggestion-item"><p>Ensure section titles are standard (e.g., "Work Experience", "Education").</p></div>
+          </div>`;
+        break;
+      case 'cv-score':
+        html += `<p>Your overall CV score is 85/100, which is excellent. It reflects strong formatting and impactful content.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>How to Improve Your Score</h4>
+            <div class="suggestion-item"><p>Add a link to your professional portfolio or LinkedIn profile.</p></div>
+            <div class="suggestion-item"><p>Include a summary of skills at the top for quick scanning.</p></div>
+          </div>`;
+        break;
+      case 'improve-cv':
+        html += `<p>Your professional summary is a great start. Tailoring it more closely to the job description will significantly increase its impact.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI Suggestions</h4>
+            <div class="suggestion-item"><p>Incorporate keywords from the job description into your summary.</p></div>
+            <div class="suggestion-item"><p>Condense roles older than 10 years to a single line to save space.</p></div>
+          </div>`;
+        break;
+      case 'cover-letter':
+        html += `<p>A compelling cover letter has been generated, emphasizing your most relevant achievements for the Software Engineer role.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI Suggestions</h4>
+            <div class="suggestion-item"><p>Personalize the first paragraph by mentioning the hiring manager's name if possible.</p></div>
+            <div class="suggestion-item"><p>Reference a recent company project or news to show your interest.</p></div>
+          </div>`;
+        break;
+      case 'job-match':
+        const score = 78;
+        html += `
+          <div class="match-score">
+            <span class="score-value">${score}%</span>
+            <span class="score-label">Job Match</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${score}%;"></div>
+          </div>
+          <p style="margin-top:1rem;">Your CV is a strong match for the role. Adding a few more specific skills could push you over the top.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI Suggestions</h4>
+            <div class="suggestion-item"><p>Add "Docker" and "Kubernetes" to your skills section to increase match.</p></div>
+            <div class="suggestion-item"><p>Highlight experience with "Agile methodologies" in your summary.</p></div>
+          </div>`;
+        break;
+      case 'hr-questions':
+        html += `<p>Based on your CV, here are some potential interview questions you should prepare for.</p>`;
+        html += `
+          <div class="ai-suggestions">
+            <h4>AI-Suggested Questions</h4>
+            <div class="suggestion-item"><p>"Tell me about a time you led a project from conception to completion."</p></div>
+            <div class="suggestion-item"><p>"How do you stay updated with the latest technologies in your field?"</p></div>
+          </div>`;
+        break;
+    }
+    html += `</div>`;
+    return html;
+  };
+});
+</script>
+{% endblock %}

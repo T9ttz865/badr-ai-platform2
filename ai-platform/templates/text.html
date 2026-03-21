@@ -1,0 +1,395 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="text-page">
+
+<!-- SOURCE TEXT -->
+<div class="source-container">
+
+<div class="source-card">
+
+<div class="source-header">
+
+<span>النص الأصلي للتحليل</span>
+
+<button
+class="clear-text-btn"
+id="clearSourceBtn"
+style="display:none"
+>
+مسح النص
+</button>
+
+</div>
+
+<textarea
+id="sourceText"
+placeholder="الصق النص الأكاديمي أو المقال هنا لبدء التحليل..."
+></textarea>
+
+</div>
+
+</div>
+
+
+<!-- ANALYSIS TOOLS -->
+<div class="analysis-toolbar">
+
+<div class="toolbar-content">
+
+<button class="tool-chip" onclick="triggerAnalysis('summary')">
+📝 تلخيص
+</button>
+
+<button class="tool-chip" onclick="triggerAnalysis('explanation')">
+🔍 تبسيط
+</button>
+
+<button class="tool-chip" onclick="triggerAnalysis('grammar')">
+✍️ تصحيح لغوي
+</button>
+
+<button class="tool-chip" onclick="triggerAnalysis('tone')">
+🎨 تحليل النبرة
+</button>
+
+<button class="tool-chip" onclick="triggerAnalysis('translate')">
+🌐 ترجمة
+</button>
+
+</div>
+
+</div>
+
+
+<!-- CHAT AREA -->
+<main id="chatOutput">
+
+<div class="chat-wrapper">
+
+<div class="message-row ai">
+
+<div class="avatar">AI</div>
+
+<div class="message-content">
+
+<div class="sender-name">
+Text Intelligence
+</div>
+
+<div class="bubble">
+أنا مساعدك النصي. الصق النص في الأعلى، واختر أداة التحليل أو اطرح سؤالاً محدداً.
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+
+<!-- INPUT -->
+<div class="input-container">
+
+<div class="input-box">
+
+<textarea
+id="userPrompt"
+rows="1"
+class="user-input-textarea"
+placeholder="اكتب سؤالاً أو أمراً هنا..."
+></textarea>
+
+<button
+class="send-btn"
+id="sendBtn"
+disabled
+>
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+<line x1="22" y1="2" x2="11" y2="13"></line>
+
+<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+
+</svg>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<style>
+
+/* إصلاح السكرول */
+
+#chatOutput{
+height: calc(100vh - 260px);
+overflow-y: auto;
+padding-bottom: 160px;
+scroll-behavior: smooth;
+}
+
+</style>
+
+
+<script>
+
+/* DOM */
+
+const sourceText = document.getElementById("sourceText");
+const clearSourceBtn = document.getElementById("clearSourceBtn");
+const chatOutput = document.getElementById("chatOutput");
+const userPrompt = document.getElementById("userPrompt");
+const sendBtn = document.getElementById("sendBtn");
+
+
+/* SOURCE TEXT INPUT */
+
+sourceText.addEventListener("input", function(){
+
+if(this.value.trim().length > 0){
+clearSourceBtn.style.display = "block";
+}else{
+clearSourceBtn.style.display = "none";
+}
+
+});
+
+
+clearSourceBtn.addEventListener("click", function(){
+
+sourceText.value = "";
+clearSourceBtn.style.display = "none";
+
+});
+
+
+/* PROMPT INPUT */
+
+userPrompt.addEventListener("input", function(){
+
+this.style.height = "auto";
+this.style.height = this.scrollHeight + "px";
+
+if(this.value.trim().length > 0){
+sendBtn.removeAttribute("disabled");
+}else{
+sendBtn.setAttribute("disabled","true");
+}
+
+});
+
+
+/* MESSAGES */
+
+function appendMessage(text,sender){
+
+const wrapper = document.querySelector(".chat-wrapper");
+
+const row = document.createElement("div");
+row.className = `message-row ${sender}`;
+
+const avatar = document.createElement("div");
+avatar.className = "avatar";
+avatar.textContent = "AI";
+
+if(sender === "user"){
+avatar.style.display = "none";
+}
+
+const content = document.createElement("div");
+content.className = "message-content";
+
+const name = document.createElement("div");
+name.className = "sender-name";
+name.textContent = sender === "user" ? "أنت" : "Text Intelligence";
+
+const bubble = document.createElement("div");
+bubble.className = "bubble";
+bubble.textContent = text;
+
+content.appendChild(name);
+content.appendChild(bubble);
+
+row.appendChild(avatar);
+row.appendChild(content);
+
+wrapper.appendChild(row);
+
+
+/* سكرول تلقائي */
+
+setTimeout(()=>{
+chatOutput.scrollTop = chatOutput.scrollHeight;
+},50);
+
+}
+
+
+/* TYPING */
+
+function showTyping(){
+
+const wrapper = document.querySelector(".chat-wrapper");
+
+const row = document.createElement("div");
+row.className = "message-row ai typing-row";
+row.id = "typingIndicator";
+
+const avatar = document.createElement("div");
+avatar.className = "avatar";
+avatar.textContent = "AI";
+
+const content = document.createElement("div");
+content.className = "message-content";
+
+const name = document.createElement("div");
+name.className = "sender-name";
+name.textContent = "Text Intelligence";
+
+const bubble = document.createElement("div");
+bubble.className = "bubble";
+
+bubble.innerHTML = `
+<div class="typing-dots">
+<div class="dot"></div>
+<div class="dot"></div>
+<div class="dot"></div>
+</div>
+`;
+
+content.appendChild(name);
+content.appendChild(bubble);
+
+row.appendChild(avatar);
+row.appendChild(content);
+
+wrapper.appendChild(row);
+
+chatOutput.scrollTop = chatOutput.scrollHeight;
+
+}
+
+
+function removeTyping(){
+
+const el = document.getElementById("typingIndicator");
+
+if(el){
+el.remove();
+}
+
+}
+
+
+/* ANALYSIS */
+
+window.triggerAnalysis = async function(type){
+
+const text = sourceText.value.trim();
+
+if(!text){
+
+appendMessage("الرجاء إدخال النص المراد تحليله أولاً.","ai");
+return;
+
+}
+
+appendMessage("جار تحليل النص...","user");
+
+showTyping();
+
+const response = await fetch("/analyze_text",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+text:text,
+analysis_type:type,
+mode:"text"
+})
+
+});
+
+const data = await response.json();
+
+removeTyping();
+
+appendMessage(data.reply || data.message || "تمت المعالجة.","ai");
+
+};
+
+
+/* CHAT */
+
+async function sendMessage(){
+
+const text = userPrompt.value.trim();
+
+if(!text) return;
+
+userPrompt.value = "";
+sendBtn.setAttribute("disabled","true");
+
+appendMessage(text,"user");
+
+showTyping();
+
+const payload = {
+message:text,
+mode:"text"
+};
+
+if(sourceText.value.trim()){
+payload.context = sourceText.value;
+}
+
+const response = await fetch("/chat",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify(payload)
+
+});
+
+const data = await response.json();
+
+removeTyping();
+
+appendMessage(data.reply || "لا يمكنني الإجابة حالياً","ai");
+
+}
+
+
+sendBtn.addEventListener("click",sendMessage);
+
+userPrompt.addEventListener("keypress",function(e){
+
+if(e.key === "Enter" && !e.shiftKey){
+
+e.preventDefault();
+sendMessage();
+
+}
+
+});
+
+</script>
+
+{% endblock %}

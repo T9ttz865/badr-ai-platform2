@@ -1,0 +1,354 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+.bubble.ai-bubble {
+  font-size: 15px;
+  line-height: 1.8;
+  word-break: break-word;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.bubble.ai-bubble h1,.bubble.ai-bubble h2,.bubble.ai-bubble h3,.bubble.ai-bubble h4 {
+  margin: 1em 0 0.4em; font-weight: 700; color: #fff; line-height: 1.3;
+}
+.bubble.ai-bubble h1 { font-size:1.5em; border-bottom:1px solid #444; padding-bottom:5px; }
+.bubble.ai-bubble h2 { font-size:1.25em; border-bottom:1px solid #333; padding-bottom:4px; }
+.bubble.ai-bubble h3 { font-size:1.1em; color:#a8d8ff; }
+.bubble.ai-bubble h4 { font-size:1em; color:#c3b9ff; }
+.bubble.ai-bubble p  { margin:0.5em 0; }
+.bubble.ai-bubble strong { font-weight:700; color:#fff; }
+.bubble.ai-bubble em { font-style:italic; color:#d0d0d0; }
+.bubble.ai-bubble ul,.bubble.ai-bubble ol { margin:0.5em 0 0.5em 1.4em; padding:0; }
+.bubble.ai-bubble li { margin:0.3em 0; }
+.bubble.ai-bubble ul li::marker { color:#60a5fa; }
+.bubble.ai-bubble ol li::marker { color:#34d399; font-weight:600; }
+.bubble.ai-bubble hr { border:none; border-top:1px solid #3a3a3a; margin:1em 0; }
+.bubble.ai-bubble blockquote {
+  border-left:4px solid #4f8ef7; background:rgba(79,142,247,0.08);
+  margin:0.8em 0; padding:0.6em 1em; border-radius:0 6px 6px 0;
+  color:#b8c8e8; font-style:italic;
+}
+.bubble.ai-bubble code:not(pre code) {
+  background:rgba(255,255,255,0.1); color:#f97316;
+  border-radius:4px; padding:2px 6px; font-size:0.88em;
+  font-family:"Fira Code",Consolas,monospace;
+}
+.bubble.ai-bubble pre { margin:0; padding:12px 16px; overflow-x:auto; background:#0d1117; }
+.ai-avatar{
+width:100%;
+height:100%;
+object-fit:cover;
+border-radius:6px;
+}
+</style>
+
+<div class="chat-page" lang="ar" dir="rtl">
+
+<main id="chat-container">
+<div class="chat-wrapper">
+
+<div class="message-row ai ai-message">
+<div class="avatar">AI</div>
+
+<div class="message-content">
+<div class="sender-name">Badr AI</div>
+
+<div class="bubble ai-bubble" dir="rtl">
+مرحباً! أنا Badr AI 🙂 كيف يمكنني مساعدتك اليوم؟
+</div>
+
+</div>
+</div>
+
+</div>
+</main>
+
+
+<div class="input-container">
+<div class="input-box">
+
+<textarea id="userInput" rows="1"
+placeholder="أرسل رسالة إلى Badr AI..."
+dir="rtl"></textarea>
+
+<button class="send-btn"
+id="sendBtn"
+type="button"
+disabled>
+
+<svg width="18" height="18"
+viewBox="0 0 24 24"
+fill="none"
+stroke="currentColor"
+stroke-width="2">
+
+<line x1="22" y1="2" x2="11" y2="13"></line>
+<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+
+</svg>
+</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+function renderMarkdown(text){
+if(!text) return "";
+try { return marked.parse(text); }
+catch(e){ return `<p>${text}</p>`; }
+}
+
+const chatContainer = document.getElementById("chat-container");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+
+
+userInput.addEventListener("input",function(){
+
+this.style.height="auto";
+this.style.height=this.scrollHeight+"px";
+
+sendBtn.toggleAttribute(
+"disabled",
+this.value.trim().length===0
+);
+
+});
+
+
+function scrollBottom(){
+chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
+function appendMessage(text, sender) {
+
+  const wrapper = document.querySelector(".chat-wrapper");
+
+  const row = document.createElement("div");
+  row.className = sender === "user"
+      ? "message-row user user-message"
+      : "message-row ai ai-message";
+
+ const avatar = document.createElement("div");
+avatar.className = "avatar";
+avatar.innerHTML = '<img src="/static/images/logo-main.png" class="ai-avatar">';
+
+  const content = document.createElement("div");
+  content.className = "message-content";
+
+  const name = document.createElement("div");
+  name.className = "sender-name";
+  name.textContent = sender === "user" ? "أنت" : "Badr AI";
+
+  const bubble = document.createElement("div");
+  bubble.className = sender === "ai" ? "bubble ai-bubble" : "bubble";
+  bubble.dir = "rtl";
+
+  if (sender === "ai") {
+      bubble.innerHTML = renderMarkdown(text);
+  } else {
+      bubble.textContent = text;
+  }
+
+  content.appendChild(name);
+  content.appendChild(bubble);
+
+  if (sender === "ai") {
+      row.appendChild(avatar);
+      row.appendChild(content);
+  } else {
+      row.appendChild(content);
+      row.appendChild(avatar);
+      avatar.style.display = "none";
+  }
+
+  wrapper.appendChild(row);
+  scrollBottom();
+
+  return bubble;
+}
+
+
+
+function showTyping(){
+
+const wrapper=document.querySelector(".chat-wrapper");
+
+const row=document.createElement("div");
+row.className="message-row ai ai-message";
+row.id="typingIndicator";
+
+
+const avatar=document.createElement("div");
+avatar.className="avatar";
+avatar.textContent="AI";
+
+
+const content=document.createElement("div");
+content.className="message-content";
+
+
+const name=document.createElement("div");
+name.className="sender-name";
+name.textContent="Badr AI";
+
+
+const bubble=document.createElement("div");
+bubble.className="bubble";
+bubble.textContent="...";
+
+
+content.appendChild(name);
+content.appendChild(bubble);
+
+row.appendChild(avatar);
+row.appendChild(content);
+
+wrapper.appendChild(row);
+
+scrollBottom();
+
+}
+
+
+
+function removeTyping(){
+
+const el=document.getElementById("typingIndicator");
+
+if(el) el.remove();
+
+}
+
+
+
+async function sendMessage(){
+
+const text=userInput.value.trim();
+
+if(!text) return;
+
+userInput.value="";
+userInput.style.height="24px";
+
+sendBtn.setAttribute("disabled","true");
+
+appendMessage(text,"user");
+
+showTyping();
+
+
+try{
+
+const response = await fetch("/chat_stream",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json; charset=utf-8"
+},
+
+body:JSON.stringify({
+message:text,
+mode:"chat"
+})
+
+});
+
+
+removeTyping();
+
+const aiBubble = appendMessage("","ai");
+
+const decoder=new TextDecoder("utf-8");
+const reader=response.body.getReader();
+
+let buffer="";
+let mdBuffer="";
+
+
+while(true){
+
+const {done,value}=await reader.read();
+
+if(done) break;
+
+buffer += decoder.decode(value,{stream:true});
+
+const events=buffer.split("\n\n");
+
+buffer = events.pop();
+
+for(const event of events){
+
+const line=event.trim();
+
+if(!line.startsWith("data:")) continue;
+
+const jsonStr=line.replace("data:","").trim();
+
+if(!jsonStr) continue;
+
+try{
+
+const data=JSON.parse(jsonStr);
+
+if(data.token){
+
+mdBuffer += data.token;
+
+aiBubble.innerHTML =
+renderMarkdown(mdBuffer);
+
+scrollBottom();
+
+}
+
+}catch(e){}
+
+}
+
+}
+
+}catch(error){
+
+removeTyping();
+
+appendMessage("حدث خطأ في الاتصال بالخادم.","ai");
+
+}
+
+
+sendBtn.removeAttribute("disabled");
+
+}
+
+
+sendBtn.addEventListener("click",sendMessage);
+
+
+userInput.addEventListener("keydown",function(e){
+
+if(e.key==="Enter" && !e.shiftKey){
+
+e.preventDefault();
+
+sendMessage();
+
+}
+
+});
+
+</script>
+
+{% endblock %}
