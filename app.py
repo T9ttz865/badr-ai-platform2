@@ -34,7 +34,8 @@ GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY is missing.")
 
-
+SUPABASE_URL = "https://bvxqviklrvuxubhkhcmz.supabase.co"
+SUPABASE_KEY = "sb_publishable_w45tE0PUFhwFr6K-jhyEKg_HDQwIKK8"
 # ===============================
 # MEMORY
 # ===============================
@@ -499,7 +500,28 @@ Provide clear, practical explanations.
 # ===============================
 # HELPERS
 # ===============================
+def log_chat(message, reply):
 
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/logs"
+
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "action": "chat",
+            "content": f"User: {message} | AI: {reply}",
+            "ip": request.remote_addr
+        }
+
+        requests.post(url, headers=headers, json=data, timeout=5)
+
+    except Exception as e:
+        print("Supabase error:", e)
+        
 def user_asked_identity(text):
     t = (text or "").lower()
     triggers = [
@@ -711,6 +733,7 @@ def chat():
     messages = build_messages(user_message, mode=mode)
     reply = call_groq_chat(messages, model=MODEL_CHAT)
 
+    log_chat(user_message, reply)
     if not reply:
         reply = "لا يوجد رد."
 
