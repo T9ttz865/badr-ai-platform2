@@ -1,3 +1,7 @@
+// ===============================
+// MARKDOWN RENDER
+// ===============================
+
 const mdRenderer = new marked.Renderer();
 
 mdRenderer.code = function(code, language) {
@@ -43,50 +47,40 @@ marked.setOptions({
 });
 
 function renderMarkdown(text) {
-
     if (!text) return "";
-
     try {
         return marked.parse(text);
-    } catch (e) {
+    } catch {
         return `<p>${text}</p>`;
     }
-
 }
 
 
 // ===============================
-// Copy Code
+// COPY CODE
 // ===============================
 
 function copyCode(id) {
-
     const el = document.getElementById(id);
     if (!el) return;
-
     navigator.clipboard.writeText(el.innerText);
-
 }
 
 
 // ===============================
-// Detect Page Mode
+// MODE DETECTION
 // ===============================
 
 function detectMode() {
-
     const path = window.location.pathname;
-
     if (path.includes("pdf")) return "pdf";
     if (path.includes("text")) return "text";
-
     return "chat";
-
 }
 
 
 // ===============================
-// Send Message
+// SEND MESSAGE
 // ===============================
 
 async function sendMessage(mode = null) {
@@ -101,16 +95,9 @@ async function sendMessage(mode = null) {
 
     if (!mode) mode = detectMode();
 
-    // ===============================
     // USER MESSAGE
-    // ===============================
-
     const userRow = document.createElement("div");
     userRow.className = "message-row user user-message";
-
-    const userAvatar = document.createElement("div");
-    userAvatar.className = "avatar";
-    userAvatar.style.display = "none";
 
     const userContent = document.createElement("div");
     userContent.className = "message-content";
@@ -125,8 +112,6 @@ async function sendMessage(mode = null) {
 
     userContent.appendChild(userName);
     userContent.appendChild(userBubble);
-
-    userRow.appendChild(userAvatar);
     userRow.appendChild(userContent);
 
     wrapper.appendChild(userRow);
@@ -134,51 +119,27 @@ async function sendMessage(mode = null) {
     input.value = "";
     scrollToBottom();
 
-
-    // ===============================
     // LOADING
-    // ===============================
-
     const loadingRow = document.createElement("div");
     loadingRow.className = "message-row ai ai-message";
 
-    const loadingAvatar = document.createElement("div");
-    loadingAvatar.className = "avatar";
-    loadingAvatar.textContent = "AI";
-
-    const loadingContent = document.createElement("div");
-    loadingContent.className = "message-content";
-
-    const loadingName = document.createElement("div");
-    loadingName.className = "sender-name";
-    loadingName.textContent = "Badr AI";
-
-    const loadingBubble = document.createElement("div");
-    loadingBubble.className = "bubble";
-    loadingBubble.textContent = "⏳ Processing...";
-
-    loadingContent.appendChild(loadingName);
-    loadingContent.appendChild(loadingBubble);
-
-    loadingRow.appendChild(loadingAvatar);
-    loadingRow.appendChild(loadingContent);
+    loadingRow.innerHTML = `
+    <div class="avatar">AI</div>
+    <div class="message-content">
+        <div class="sender-name">Badr AI</div>
+        <div class="bubble">⏳ Processing...</div>
+    </div>
+    `;
 
     wrapper.appendChild(loadingRow);
-
     scrollToBottom();
-
 
     try {
 
         const response = await fetch("/chat_stream", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=UTF-8"
-            },
-            body: JSON.stringify({
-                message: message,
-                mode: mode
-            })
+            headers: { "Content-Type": "application/json; charset=UTF-8" },
+            body: JSON.stringify({ message, mode })
         });
 
         loadingRow.remove();
@@ -186,29 +147,18 @@ async function sendMessage(mode = null) {
         const aiRow = document.createElement("div");
         aiRow.className = "message-row ai ai-message";
 
-        const aiAvatar = document.createElement("div");
-        aiAvatar.className = "avatar";
-        aiAvatar.textContent = "AI";
-
-        const aiContent = document.createElement("div");
-        aiContent.className = "message-content";
-
-        const aiName = document.createElement("div");
-        aiName.className = "sender-name";
-        aiName.textContent = "Badr AI";
-
         const bubble = document.createElement("div");
         bubble.className = "bubble ai-bubble";
 
-        aiContent.appendChild(aiName);
-        aiContent.appendChild(bubble);
+        aiRow.innerHTML = `
+        <div class="avatar">AI</div>
+        <div class="message-content">
+            <div class="sender-name">Badr AI</div>
+        </div>
+        `;
 
-        aiRow.appendChild(aiAvatar);
-        aiRow.appendChild(aiContent);
-
+        aiRow.querySelector(".message-content").appendChild(bubble);
         wrapper.appendChild(aiRow);
-
-        scrollToBottom();
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
@@ -219,7 +169,6 @@ async function sendMessage(mode = null) {
         while (true) {
 
             const { value, done } = await reader.read();
-
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
@@ -229,24 +178,17 @@ async function sendMessage(mode = null) {
 
             for (const part of parts) {
 
-                const line = part.trim();
+                if (!part.startsWith("data:")) continue;
 
-                if (!line.startsWith("data:")) continue;
-
-                const jsonStr = line.replace("data:", "").trim();
-
+                const jsonStr = part.replace("data:", "").trim();
                 if (!jsonStr) continue;
 
                 try {
-
                     const data = JSON.parse(jsonStr);
 
                     if (data.token) {
-
                         fullText += data.token;
-
                         bubble.innerHTML = renderMarkdown(fullText);
-
                         scrollToBottom();
                     }
 
@@ -255,7 +197,6 @@ async function sendMessage(mode = null) {
                 }
 
             }
-
         }
 
     } catch (error) {
@@ -265,44 +206,26 @@ async function sendMessage(mode = null) {
         const errorRow = document.createElement("div");
         errorRow.className = "message-row ai ai-message";
 
-        const avatar = document.createElement("div");
-        avatar.className = "avatar";
-        avatar.textContent = "AI";
-
-        const content = document.createElement("div");
-        content.className = "message-content";
-
-        const name = document.createElement("div");
-        name.className = "sender-name";
-        name.textContent = "Badr AI";
-
-        const bubble = document.createElement("div");
-        bubble.className = "bubble";
-        bubble.textContent = "⚠ Connection error — check Flask server";
-
-        content.appendChild(name);
-        content.appendChild(bubble);
-
-        errorRow.appendChild(avatar);
-        errorRow.appendChild(content);
+        errorRow.innerHTML = `
+        <div class="avatar">AI</div>
+        <div class="message-content">
+            <div class="sender-name">Badr AI</div>
+            <div class="bubble">⚠ Connection error — check Flask server</div>
+        </div>
+        `;
 
         wrapper.appendChild(errorRow);
-
         scrollToBottom();
-
         console.error(error);
-
     }
-
 }
 
 
 // ===============================
-// Scroll
+// SCROLL
 // ===============================
 
 function scrollToBottom() {
-
     const chatBox =
         document.getElementById("chatBox") ||
         document.getElementById("chat-container");
@@ -313,117 +236,107 @@ function scrollToBottom() {
         top: chatBox.scrollHeight,
         behavior: "smooth"
     });
-
 }
 
 
 // ===============================
-// ENTER SEND
+// DOM READY
 // ===============================
 
 document.addEventListener("DOMContentLoaded", function() {
 
+    // ENTER SEND
     const input = document.getElementById("userInput");
+    if (input) {
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(detectMode());
+            }
+        });
+    }
 
-    if (!input) return;
+    // ===============================
+    // 🔥 SIDEBAR TOGGLE (FIX)
+    // ===============================
 
-    input.addEventListener("keydown", function(e) {
+    const menuBtn = document.querySelector('.menu-btn');
+    const sidebar = document.querySelector('.sidebar');
 
-        if (e.key === "Enter" && !e.shiftKey) {
+    if (menuBtn && sidebar) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
 
-            e.preventDefault();
-
-            sendMessage(detectMode());
-
-        }
-
-    });
-
-});
-// ===============================
-// FIX CV ANALYSIS (ADDED ONLY)
-// ===============================
-
-document.addEventListener("DOMContentLoaded", function() {
+    // ===============================
+    // CV ANALYSIS
+    // ===============================
 
     const analysisBtn = document.getElementById("analysisButton");
 
-    if (!analysisBtn) return;
+    if (analysisBtn) {
 
-    // نمنع التكرار
-    analysisBtn.replaceWith(analysisBtn.cloneNode(true));
+        analysisBtn.replaceWith(analysisBtn.cloneNode(true));
+        const newBtn = document.getElementById("analysisButton");
 
-    const newBtn = document.getElementById("analysisButton");
+        newBtn.addEventListener("click", async function() {
 
-    newBtn.addEventListener("click", async function() {
+            const fileInput = document.getElementById("cvFileInput");
+            const jobTitleInput = document.getElementById("jobTitle");
+            const resultsContent = document.getElementById("resultsContent");
+            const selectedCard = document.querySelector(".tool-card.selected");
 
-        console.log("analysis started");
+            if (!selectedCard) return;
 
-        const fileInput = document.getElementById("cvFileInput");
-        const jobTitleInput = document.getElementById("jobTitle");
-        const resultsContent = document.getElementById("resultsContent");
+            const selectedTool = selectedCard.dataset.tool;
+            const file = fileInput.files[0];
+            const jobTitle = jobTitleInput.value;
 
-        const selectedCard = document.querySelector(".tool-card.selected");
+            if (!file) return;
 
-        if (!selectedCard) {
-            console.warn("No tool selected");
-            return;
-        }
+            const formData = new FormData();
+            formData.append("cv", file);
+            formData.append("job_title", jobTitle);
+            formData.append("tool", selectedTool);
 
-        const selectedTool = selectedCard.dataset.tool;
-        const file = fileInput.files[0];
-        const jobTitle = jobTitleInput.value;
+            newBtn.classList.add("loading");
+            newBtn.disabled = true;
 
-        if (!file) {
-            console.warn("No file uploaded");
-            return;
-        }
+            try {
 
-        const formData = new FormData();
-        formData.append("cv", file);
-        formData.append("job_title", jobTitle);
-        formData.append("tool", selectedTool);
+                const response = await fetch("/analyze_cv", {
+                    method: "POST",
+                    body: formData
+                });
 
-        newBtn.classList.add("loading");
-        newBtn.disabled = true;
+                const data = await response.json();
 
-        try {
+                if (resultsContent) {
+                    resultsContent.classList.add("active");
+                    resultsContent.innerHTML = data.result;
+                }
 
-            const response = await fetch("/analyze_cv", {
-                method: "POST",
-                body: formData
-            });
+            } catch {
 
-            const data = await response.json();
-
-            if (resultsContent) {
-                resultsContent.classList.add("active");
-                resultsContent.innerHTML = data.result;
+                if (resultsContent) {
+                    resultsContent.innerHTML = `
+                    <div class="result-item">
+                        <h3>Error</h3>
+                        <p>AI analysis failed.</p>
+                    </div>`;
+                }
             }
 
-        } catch (error) {
+            newBtn.classList.remove("loading");
+            newBtn.disabled = false;
 
-            console.error(error);
-
-            if (resultsContent) {
-                resultsContent.innerHTML = `
-                <div class="result-item">
-                    <h3>Error</h3>
-                    <p>AI analysis failed.</p>
-                </div>
-                `;
+            const resultsSection = document.getElementById("resultsSection");
+            if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: "smooth" });
             }
 
-        }
-
-        newBtn.classList.remove("loading");
-        newBtn.disabled = false;
-
-        const resultsSection = document.getElementById("resultsSection");
-        if (resultsSection) {
-            resultsSection.scrollIntoView({ behavior: "smooth" });
-        }
-
-    });
+        });
+    }
 
 });

@@ -18,7 +18,9 @@ body {
     color: #f8fafc;
     height: 100vh;
     display: flex;
-    overflow: hidden;
+    /* FIX */
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 
@@ -400,26 +402,30 @@ textarea::placeholder {
 
 /* ============================= */
 
-@media(max-width:900px) {
-    .sidebar {
-        width: 70px;
-    }
-    .input-container {
-        left: 70px;
-    }
-    .logo {
-        font-size: 14px;
-    }
-    .nav a {
-        font-size: 12px;
-        padding: 8px;
-    }
-}
-
 @media(max-width:600px) {
-    .sidebar {
-        display: none;
+    /* FIX LAYOUT */
+    body {
+        flex-direction: column;
+        height: auto;
     }
+    .main {
+        width: 100%;
+        height: auto;
+    }
+    /* SIDEBAR (MOBILE MENU) */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        height: 100%;
+        width: 220px;
+        z-index: 2000;
+        transition: 0.3s;
+    }
+    .sidebar.active {
+        right: 0;
+    }
+    /* INPUT FIX */
     .input-container {
         left: 0;
     }
