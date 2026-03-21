@@ -16,11 +16,10 @@ body {
     font-family: 'Cairo', sans-serif;
     background: #0f172a;
     color: #f8fafc;
-    height: 100vh;
+    /* 🔥 أهم تعديل */
+    min-height: 100vh;
     display: flex;
-    /* FIX */
-    overflow-x: auto;
-    overflow-y: hidden;
+    flex-direction: row;
 }
 
 
@@ -101,8 +100,9 @@ body {
 
 .content {
     flex: 1;
-    overflow: auto;
-    padding: 30px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
 }
 
 
@@ -443,4 +443,11 @@ textarea::placeholder {
     min-height: 0;
     overflow-y: auto;
     scroll-behavior: smooth;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }

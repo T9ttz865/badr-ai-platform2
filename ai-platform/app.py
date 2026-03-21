@@ -4,6 +4,8 @@ import json
 import time
 import uuid
 
+from app import log_chat
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context, session as flask_session
@@ -753,6 +755,11 @@ def chat_stream():
 
         if not reply:
             reply = "لا يوجد رد."
+
+        # ===============================
+        # 🔥 إضافة التسجيل هنا (المهم)
+        # ===============================
+        log_chat(user_message, reply)
 
         CHAT_HISTORY.append({"role": "user", "content": user_message})
         CHAT_HISTORY.append({"role": "assistant", "content": reply})
