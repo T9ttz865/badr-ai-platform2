@@ -666,6 +666,33 @@ def build_messages(user_message, mode="text"):
 # CALL GROQ
 # ===============================
 
+# def call_groq_chat(messages, temperature=0.4, max_tokens=1500, model=MODEL_CHAT):
+
+#     url = f"{GROQ_BASE_URL}/chat/completions"
+
+#     headers = {
+#         "Authorization": f"Bearer {GROQ_API_KEY}",
+#         "Content-Type": "application/json"
+#     }
+
+#     payload = {
+#         "model": model,
+#         "messages": messages,
+#         "temperature": temperature,
+#         "max_tokens": max_tokens
+#     }
+
+#     try:
+#         r = session.post(url, headers=headers, json=payload, timeout=60)
+#         r.raise_for_status()
+#         data = r.json()
+#         reply = data["choices"][0]["message"]["content"]
+#         return clean_response(reply)
+
+#     except Exception:
+#         return ""
+
+
 def call_groq_chat(messages, temperature=0.4, max_tokens=1500, model=MODEL_CHAT):
 
     url = f"{GROQ_BASE_URL}/chat/completions"
@@ -683,14 +710,26 @@ def call_groq_chat(messages, temperature=0.4, max_tokens=1500, model=MODEL_CHAT)
     }
 
     try:
-        r = session.post(url, headers=headers, json=payload, timeout=60)
+        r = session.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+
         r.raise_for_status()
+
         data = r.json()
+
         reply = data["choices"][0]["message"]["content"]
+
         return clean_response(reply)
 
-    except Exception:
+    except Exception as e:
+        print("GROQ ERROR:", e)
+        print("Response:", r.text if 'r' in locals() else "No response")
         return ""
+
 
 
 # ===============================
