@@ -30,8 +30,11 @@ from dotenv import load_dotenv
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-MODEL_CHAT = "openai/gpt-oss-120b"
-MODEL_PDF = "openai/gpt-oss-120b"
+# MODEL_CHAT = "openai/gpt-oss-120b"
+# MODEL_PDF = "openai/gpt-oss-120b"
+MODEL_CHAT = "llama-3.3-70b-versatile"
+MODEL_PDF = "llama-3.3-70b-versatile"
+
 
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
